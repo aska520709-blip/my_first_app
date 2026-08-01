@@ -27,7 +27,7 @@ jobs:
           channel: 'stable'
 
       - name: Build Flutter Web
-        run: flutter build web --release --no-tree-shake-icons
+        run: flutter build web --release --base-href "/my_first_app/" --no-tree-shake-icons
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
