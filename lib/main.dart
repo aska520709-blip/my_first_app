@@ -113,7 +113,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
 
   Future<void> _loadIncidents() async {
     try {
-      final String response = await rootBundle.loadString('assets/incidents.json');
+final String response = await rootBundle.loadString('incidents.json');
       final List<dynamic> data = json.decode(response);
       final incidents = data.map((json) => Incident.fromJson(json)).toList();
       
