@@ -205,3 +205,132 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 Text(item['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF0D47A1))),
               ],
             ),
+            content: child: Row(
+                children: filterOptions.map((tag) {
+                  final isSelected = _selectedFilterTag == tag;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: RawChip(
+                      label: Text(
+                        tag,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : const Color(0xFF1565C0),
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: const Color(0xFF1E88E5),
+                      backgroundColor: Colors.white,
+                      showCheckmark: false,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: isSelected ? const Color(0xFF1E88E5) : const Color(0xFFBBDEFB),
+                        ),
+                      ),
+                      onSelected: (selected) {
+                        setState(() {
+                          _selectedFilterTag = tag;
+                        });
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+            child: ElevatedButton.icon(
+              onPressed: _showRandomIncident,
+              icon: const Icon(Icons.casino, color: Colors.white),
+              label: const Text('ランダムで事件を読む！', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 16)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E88E5),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+                elevation: 2,
+              ),
+            ),
+          ),
+          const Divider(height: 1, color: Color(0xFFBBDEFB)),
+          Expanded(
+            child: displayList.isEmpty
+                ? const Center(child: Text('該当する事件が見つかりません 🐾'))
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    itemCount: displayList.length,
+                    itemBuilder: (context, index) {
+                      final item = displayList[index];
+                      final originalIndex = _incidents.indexOf(item);
+
+                      return Card(
+                        color: Colors.white,
+                        elevation: 1,
+                        margin: const EdgeInsets.only(bottom: 10.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+                          leading: const Icon(Icons.pets, color: Color(0xFF1E88E5)),
+                          title: Text(
+                            item['title'],
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0D47A1)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Row(
+                            children: [
+                              Text('❤️ ${item['likes']} ', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              const SizedBox(width: 8),
+                              Text('📅 ${item['date'] ?? ''}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E88E5).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  item['dogTag'] ?? 'わんこ',
+                                  style: const TextStyle(fontSize: 10, color: Color(0xFF1565C0)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          onTap: () => _showDetailDialog(item, originalIndex),
+                          trailing: _isAdminMode
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.grey, size: 20),
+                                      tooltip: '編集',
+                                      onPressed: () => _openEditModal(originalIndex),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+                                      tooltip: '削除',
+                                      onPressed: () => _deleteIncident(originalIndex),
+                                    ),
+                                  ],
+                                )
+                              : const Icon(Icons.chevron_right, color: Colors.grey),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: _isAdminMode
+          ? FloatingActionButton.extended(
+              onPressed: _openAddModal,
+              backgroundColor: const Color(0xFF1E88E5),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('事件を記録', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            )
+          : null,
+    );
+  }
+}
