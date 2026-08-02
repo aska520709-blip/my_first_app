@@ -501,3 +501,4 @@ class _IncidentListPageState extends State<IncidentListPage> {
 // trigger rebuild
 // force rebuild timestamp: 1785671804
 // update: Sun Aug  2 21:22:21 JST 2026
+// fix web entrypoint
