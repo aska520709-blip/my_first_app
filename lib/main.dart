@@ -296,9 +296,18 @@ class _IncidentListPageState extends State<IncidentListPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E88E5),
         elevation: 0,
-        title: const Text(
-          'シエロのクスッと笑える事件簿🐾',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.pets, color: Colors.pinkAccent, size: 22),
+            SizedBox(width: 8),
+            Text(
+              'シエロのクスッと笑える事件簿',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            SizedBox(width: 8),
+            Icon(Icons.pets, color: Colors.pinkAccent, size: 22),
+          ],
         ),
         centerTitle: true,
       ),
