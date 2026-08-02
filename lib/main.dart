@@ -34,7 +34,6 @@ class Incident {
   final String id;
   final String title;
   final String date;
-  final String dogBreed;
   final String content;
   int likes;
 
@@ -42,7 +41,6 @@ class Incident {
     required this.id,
     required this.title,
     required this.date,
-    required this.dogBreed,
     required this.content,
     this.likes = 0,
   });
@@ -52,7 +50,6 @@ class Incident {
       id: json['id'] ?? '',
       title: json['title'] ?? '',
       date: json['date'] ?? '',
-      dogBreed: json['dogBreed'] ?? '',
       content: json['content'] ?? '',
       likes: json['likes'] ?? 0,
     );
@@ -63,7 +60,6 @@ class Incident {
       'id': id,
       'title': title,
       'date': date,
-      'dogBreed': dogBreed,
       'content': content,
       'likes': likes,
     };
@@ -154,7 +150,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
 
   void _showAddIncidentDialog() {
     final titleController = TextEditingController();
-    final breedController = TextEditingController();
     final contentController = TextEditingController();
 
     showDialog(
@@ -169,14 +164,11 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 controller: titleController,
                 decoration: const InputDecoration(labelText: 'タイトル'),
               ),
-              TextField(
-                controller: breedController,
-                decoration: const InputDecoration(labelText: '犬種 (例: トイプードル)'),
-              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: contentController,
                 decoration: const InputDecoration(labelText: '事件内容'),
-                maxLines: 3,
+                maxLines: 4,
               ),
             ],
           ),
@@ -193,7 +185,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
                 title: titleController.text,
                 date: "${DateTime.now().year}/${DateTime.now().month}/${DateTime.now().day}",
-                dogBreed: breedController.text.isEmpty ? "愛犬" : breedController.text,
                 content: contentController.text,
                 likes: 0,
               );
@@ -241,19 +232,9 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        incident.dogBreed,
-                        style: const TextStyle(color: Color(0xFF1976D2), fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(incident.date, style: TextStyle(color: Colors.grey[600], fontSize: 12)),
+                    const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                    const SizedBox(width: 6),
+                    Text(incident.date, style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -439,12 +420,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
                           const SizedBox(width: 16),
                           const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
                           const SizedBox(width: 4),
-                          Text(incident.date, style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 8),
-                          Text(
-                            incident.dogBreed,
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF1E88E5)),
-                          ),
+                          Text(incident.date, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -468,4 +444,3 @@ class _IncidentListPageState extends State<IncidentListPage> {
     );
   }
 }
-// update 1785630967
