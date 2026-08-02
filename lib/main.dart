@@ -82,6 +82,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
   List<Incident> _filteredIncidents = [];
   final TextEditingController _searchController = TextEditingController();
   Set<String> _likedIncidentIds = {};
+  bool _isAdminMode = false;
 
   @override
   void initState() {
@@ -148,6 +149,64 @@ class _IncidentListPageState extends State<IncidentListPage> {
     final random = Random();
     final randomIncident = _allIncidents[random.nextInt(_allIncidents.length)];
     _showIncidentDetail(randomIncident);
+  }
+
+  void _showAddIncidentDialog() {
+    final titleController = TextEditingController();
+    final breedController = TextEditingController();
+    final contentController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('新しい事件を追加 🐾'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'タイトル'),
+              ),
+              TextField(
+                controller: breedController,
+                decoration: const InputDecoration(labelText: '犬種 (例: トイプードル)'),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: '事件内容'),
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.isEmpty || contentController.text.isEmpty) return;
+              final newIncident = Incident(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                title: titleController.text,
+                date: "${DateTime.now().year}/${DateTime.now().month}/${DateTime.now().day}",
+                dogBreed: breedController.text.isEmpty ? "愛犬" : breedController.text,
+                content: contentController.text,
+                likes: 0,
+              );
+              setState(() {
+                _allIncidents.insert(0, newIncident);
+                _filterIncidents();
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('追加'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showIncidentDetail(Incident incident) {
@@ -261,6 +320,26 @@ class _IncidentListPageState extends State<IncidentListPage> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _isAdminMode ? Icons.admin_panel_settings : Icons.person_outline,
+              color: Colors.white,
+            ),
+            tooltip: _isAdminMode ? '管理者モード中' : '読者モード中',
+            onPressed: () {
+              setState(() {
+                _isAdminMode = !_isAdminMode;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(_isAdminMode ? '管理者モードに切替えました' : '読者モードに切替えました'),
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        ],
         centerTitle: true,
       ),
       body: Column(
@@ -355,7 +434,14 @@ class _IncidentListPageState extends State<IncidentListPage> {
           ),
         ],
       ),
+      floatingActionButton: _isAdminMode
+          ? FloatingActionButton.extended(
+              onPressed: _showAddIncidentDialog,
+              backgroundColor: const Color(0xFF1E88E5),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text('新規事件を追加', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            )
+          : null,
     );
   }
 }
-
