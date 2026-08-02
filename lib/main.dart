@@ -141,6 +141,37 @@ class _IncidentListPageState extends State<IncidentListPage> {
     });
   }
 
+  void _deleteIncident(Incident incident) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('事件の削除'),
+        content: Text('「${incident.title}」を本当に削除しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              setState(() {
+                _allIncidents.removeWhere((item) => item.id == incident.id);
+                _filterIncidents();
+              });
+              Navigator.pop(context); // アラート閉じる
+              Navigator.pop(context); // 詳細ダイアログ閉じる
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('事件を削除しました')),
+              );
+            },
+            child: const Text('削除する', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showRandomIncident() {
     if (_allIncidents.isEmpty) return;
     final random = Random();
@@ -272,6 +303,19 @@ class _IncidentListPageState extends State<IncidentListPage> {
                       ),
                     ),
                     const Spacer(),
+                    if (_isAdminMode) ...[
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: () => _deleteIncident(incident),
+                        icon: const Icon(Icons.delete_outline, size: 18),
+                        label: const Text('削除'),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E88E5),
