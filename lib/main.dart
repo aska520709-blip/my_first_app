@@ -110,6 +110,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
       }
     });
     await prefs.setStringList('liked_incidents', _likedIncidentIds.toList());
+    await prefs.setInt('likes_${incident.id}', incident.likes);
   }
 
   Future<void> _loadIncidents() async {
@@ -272,18 +273,23 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey,
-                        size: 28,
-                      ),
-                      onPressed: () async {
+                    InkWell(
+                      onTap: () async {
                         await _toggleLike(incident);
                         setModalState(() {});
                       },
+                      child: Row(
+                        children: [
+                          Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: isLiked ? Colors.red : Colors.grey,
+                            size: 28,
+                          ),
+                          const SizedBox(width: 6),
+                          Text('${incident.likes}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
                     ),
-                    Text('${incident.likes}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const Spacer(),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -309,37 +315,10 @@ class _IncidentListPageState extends State<IncidentListPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E88E5),
         elevation: 0,
-        title: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.pets, color: Colors.white),
-            SizedBox(width: 8),
-            Text(
-              'シエロのクスッと笑える事件簿🐾',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-          ],
+        title: const Text(
+          'シエロのクスッと笑える事件簿🐾',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isAdminMode ? Icons.admin_panel_settings : Icons.person_outline,
-              color: Colors.white,
-            ),
-            tooltip: _isAdminMode ? '管理者モード中' : '読者モード中',
-            onPressed: () {
-              setState(() {
-                _isAdminMode = !_isAdminMode;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(_isAdminMode ? '管理者モードに切替えました' : '読者モードに切替えました'),
-                  duration: const Duration(seconds: 1),
-                ),
-              );
-            },
-          ),
-        ],
         centerTitle: true,
       ),
       body: Column(
@@ -369,15 +348,49 @@ class _IncidentListPageState extends State<IncidentListPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: ElevatedButton.icon(
-              onPressed: _showRandomIncident,
-              icon: const Icon(Icons.casino, color: Colors.white),
-              label: const Text('ランダムで事件を読む！', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF29B6F6),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              ),
+            child: Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _showRandomIncident,
+                  icon: const Icon(Icons.casino, color: Colors.white),
+                  label: const Text('ランダムで事件を読む！', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF29B6F6),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isAdminMode = !_isAdminMode;
+                    });
+                  },
+                  icon: Icon(
+                    _isAdminMode ? Icons.admin_panel_settings : Icons.person_outline,
+                    color: _isAdminMode ? Colors.orange[800] : const Color(0xFF1E88E5),
+                  ),
+                  label: Text(
+                    _isAdminMode ? '👑 管理者モード中' : '👤 読者モード中',
+                    style: TextStyle(
+                      color: _isAdminMode ? Colors.orange[800] : const Color(0xFF1E88E5),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: _isAdminMode ? Colors.orange[50] : Colors.white,
+                    side: BorderSide(
+                      color: _isAdminMode ? Colors.orange : const Color(0xFF1E88E5),
+                      width: 1.5,
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -406,14 +419,24 @@ class _IncidentListPageState extends State<IncidentListPage> {
                       padding: const EdgeInsets.only(top: 6),
                       child: Row(
                         children: [
-                          Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            size: 14,
-                            color: isLiked ? Colors.red : Colors.grey,
+                          InkWell(
+                            onTap: () => _toggleLike(incident),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isLiked ? Icons.favorite : Icons.favorite_border,
+                                    size: 16,
+                                    color: isLiked ? Colors.red : Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text('${incident.likes}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                ],
+                              ),
+                            ),
                           ),
-                          const SizedBox(width: 4),
-                          Text('${incident.likes}', style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 16),
                           const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(incident.date, style: const TextStyle(fontSize: 12)),
