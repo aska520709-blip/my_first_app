@@ -20,8 +20,8 @@ jobs:
       - name: 依存関係の取得
         run: flutter pub get
 
-      - name: Web版のビルド（ベースパス指定）
-        run: flutter build web --release --base-href "/cielo-incidents/"
+      - name: Web版のビルド
+        run: flutter build web --release --base-href "/my_first_app/"
 
       - name: GitHub Pagesへデプロイ
         uses: peaceiris/actions-gh-pages@v3
