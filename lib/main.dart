@@ -358,3 +358,4 @@ class _IncidentListPageState extends State<IncidentListPage> {
     );
   }
 }
+
