@@ -4,13 +4,14 @@ on:
   push:
     branches:
       - master
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: リポジトリのチェックアウト
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Flutterのセットアップ
         uses: subosito/flutter-action@v2
@@ -21,7 +22,7 @@ jobs:
         run: flutter pub get
 
       - name: Web版のビルド
-        run: flutter build web --release --base-href "/my_first_app/"
+        run: flutter build web --release --no-tree-shake-icons --base-href "/my_first_app/"
 
       - name: GitHub Pagesへデプロイ
         uses: peaceiris/actions-gh-pages@v3
