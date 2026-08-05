@@ -356,7 +356,7 @@ class _StoryListPageState extends State<StoryListPage> {
                 Text(
                   'ボクの日常のちょっと笑える事件をあつめたよ。\n読んだあと「クスッ」としたら、ぜひ右側の ❤️（いいね）を押してね！',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.black70, height: 1.4),
+                  style: TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
                 ),
               ],
             ),
