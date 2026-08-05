@@ -152,11 +152,10 @@ class _StoryListPageState extends State<StoryListPage> {
 
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
-    // キャッシュクリア用バージョン
     final String? version = prefs.getString('data_version');
-    if (version != '2026_exact_v1') {
+    if (version != '2026_banner_v1') {
       await prefs.clear();
-      await prefs.setString('data_version', '2026_exact_v1');
+      await prefs.setString('data_version', '2026_banner_v1');
     }
 
     final String? storiesJson = prefs.getString('saved_stories');
@@ -320,7 +319,7 @@ class _StoryListPageState extends State<StoryListPage> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             child: TextField(
               decoration: InputDecoration(
                 hintText: 'キーワードで検索...',
@@ -335,6 +334,31 @@ class _StoryListPageState extends State<StoryListPage> {
                   searchQuery = value;
                 });
               },
+            ),
+          ),
+          // シエロの挨拶バナーカード
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+            padding: const EdgeInsets.all(14.0),
+            decoration: BoxDecoration(
+              color: Colors.lightBlue.shade50,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.lightBlueAccent.shade100, width: 1.5),
+            ),
+            child: const Column(
+              children: [
+                Text(
+                  '🐶 こんにちは！トイプードルのシエロです！',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.lightBlue),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'ボクの日常のちょっと笑える事件をあつめたよ。\n読んだあと「クスッ」としたら、ぜひ右側の ❤️（いいね）を押してね！',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 13, color: Colors.black70, height: 1.4),
+                ),
+              ],
             ),
           ),
           Expanded(
