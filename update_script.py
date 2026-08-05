@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import re
+
+code = '''import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
 import 'dart:convert';
@@ -256,7 +258,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
               final newIncident = Incident(
                 id: now.millisecondsSinceEpoch.toString(),
                 title: titleController.text,
-                date: now.year.toString() + '/' + now.month.toString().toString().padLeft(2, "0") + '/' + now.day.toString().toString().padLeft(2, "0"),
+                date: now.year.toString() + '/' + now.month.toString().zfill(2) + '/' + now.day.toString().zfill(2),
                 content: contentController.text,
                 likes: 0,
               );
@@ -557,4 +559,11 @@ class _IncidentListPageState extends State<IncidentListPage> {
     );
   }
 }
- 
+'''
+
+code_clean = code.replace('.zfill(2)', '.toString().padLeft(2, "0")')
+
+with open('lib/main.dart', 'w') as f:
+    f.write(code_clean)
+
+print("SUCCESS")
