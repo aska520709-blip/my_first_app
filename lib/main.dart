@@ -1,26 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:math';
+import 'dart:convert';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
   runApp(const MyApp());
-}
-
-class Incident {
-  final String id;
-  final String title;
-  final String date;
-  final String content;
-  int likes;
-
-  Incident({
-    required this.id,
-    required this.title,
-    required this.date,
-    required this.content,
-    this.likes = 0,
-  });
 }
 
 class MyApp extends StatelessWidget {
@@ -29,95 +12,300 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'シエロのクスッと笑える事件簿',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlue),
         useMaterial3: true,
       ),
-      home: const IncidentListPage(),
+      home: const StoryListPage(),
     );
   }
 }
 
-class IncidentListPage extends StatefulWidget {
-  const IncidentListPage({super.key});
+class Story {
+  String id;
+  String title;
+  String date;
+  String content;
 
-  @override
-  State<IncidentListPage> createState() => _IncidentListPageState();
+  Story({
+    required this.id,
+    required this.title,
+    required this.date,
+    required this.content,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'title': title,
+        'date': date,
+        'content': content,
+      };
+
+  factory Story.fromJson(Map<String, dynamic> json) => Story(
+        id: json['id'] ?? '',
+        title: json['title'] ?? '',
+        date: json['date'] ?? '',
+        content: json['content'] ?? '',
+      );
 }
 
-class _IncidentListPageState extends State<IncidentListPage> {
-  List<Incident> _incidents = [];
-  List<Incident> _filteredIncidents = [];
-  final TextEditingController _searchController = TextEditingController();
+class StoryListPage extends StatefulWidget {
+  const StoryListPage({super.key});
 
-  final List<Incident> _initialData = [
-    Incident(id: "1", title: "【初めての自動掃除機】謎の動きをする箱に必死の威嚇", date: "2024/08/01", content: "家に自動掃除機がやってきた日のこと。ボタンを押して動き出した瞬間、シエロは耳をピーンと立てて警戒モードに！「ワンワン！」と必死に吠えて威嚇していました。", likes: 5),
-    Incident(id: "2", title: "【初めてのカミナリ】へそ天からの一瞬で潜り込み", date: "2024/08/02", content: "大きな雷の音に驚き、爆睡状態から跳び起きて飼い主の膝と布団の隙間に頭だけ突っ込んで震えていました。", likes: 8),
-    Incident(id: "3", title: "【初めての鏡】鏡に映る自分とお友達になりたくて…", date: "2024/08/03", content: "姿見の鏡に映った自分を見て大興奮！しっぽをぶんぶん振りながら「あそぼう！」とお辞儀のポーズを取っていました。", likes: 12),
-    Incident(id: "4", title: "【初めての水たまり】歩道を歩いていたらまさかの深さに驚愕", date: "2024/08/04", content: "水たまりに前足を突っ込んだところ深さにびっくり。そこからは見つけるたびにジャンプして飛び越えていました。", likes: 10),
-    Incident(id: "5", title: "【初めてのプール】足がつかない！エア水泳を披露", date: "2024/08/05", content: "水に入る前から足がシャカシャカ動き出し、見事なエア犬かきを披露してくれました。", likes: 15),
-    Incident(id: "6", title: "【初めてのコスプレ】ライオンのたてがみでフリーズ", date: "2024/08/06", content: "ライオンのたてがみを被せられた瞬間、一歩も動けなくなりロボットのような歩みになりました。", likes: 9),
-    Incident(id: "7", title: "【初めてのドッグラン】他の犬に圧倒されて飼い主の足元に避難", date: "2024/08/07", content: "元気に走り回ると思いきや、大きなワンちゃんに挨拶されてすかさず飼い主の後ろに隠れていました。", likes: 11),
-    Incident(id: "8", title: "【初めての雪】冷たさに驚いて三本足立ち", date: "2024/08/08", content: "積もった雪に足をのせた瞬間「つめたっ！」と言わんばかりに片足を上げて固まっていました。", likes: 14),
-    Incident(id: "9", title: "【初めての焼き芋】美味しすぎて目がこぼれそうに", date: "2024/08/09", content: "甘い香りに誘われて身乗り出し、一口食べた瞬間に目を丸くして輝かせていました。", likes: 20),
-    Incident(id: "10", title: "【初めてのお留守番】カメラ越しに話しかけたら大混乱", date: "2024/08/10", content: "見守りカメラから声をかけると、姿が見えないのに声がするので首をかしげまくっていました。", likes: 18),
+  @override
+  State<StoryListPage> createState() => _StoryListPageState();
+}
+
+class _StoryListPageState extends State<StoryListPage> {
+  bool isAdminMode = false;
+  String searchQuery = '';
+  List<Story> stories = [];
+
+  final List<Story> initialStories = [
+    Story(
+      id: '1',
+      title: '【初めての自動掃除機】謎の動きをする箱に必死の威嚇',
+      date: '2024/08/01',
+      content: '''我が家にやってきた自動掃除機（ルンバ）。
+ウィーンと音を立てて動き出した瞬間、シエロの目が点になりました。
+
+「な、なんだこの生き物は…！？」
+
+低い姿勢をとって「ウゥ〜ッ」と威嚇を開始。
+掃除機が近づいてくると、脱兎のごとくソファの上に避難！
+ソファの上から必死に前足パンチ（届いていない）を繰り出して戦っていました。
+
+今ではすっかり慣れて、動く掃除機の後ろをドヤ顔でストーカーのように追跡しています。''',
+    ),
+    Story(
+      id: '2',
+      title: '【初めてのカミナリ】へそ天からの瞬時に潜り込み',
+      date: '2024/08/02',
+      content: '''ヘソ天（仰向け）で爆睡していた夏の日。
+突如「ゴロゴロ…ドカン！」と大きな雷鳴が轟きました。
+
+その瞬間、シエロは目にも留まらぬ速さで跳ね起き、飼い主の膝掛けブランケットの中に一直線！
+完全に頭から潜り込んで、お尻だけが丸見え状態に。
+
+「頭隠して尻隠さず」を地で行くシエロ。
+しばらくの間、ブランケットの中でプルプル震えながら飼い主の手に鼻先を押し付けて甘えていました。''',
+    ),
+    Story(
+      id: '3',
+      title: '【初めての鏡】鏡に映る自分とお友達になりたくて…',
+      date: '2024/08/03',
+      content: '''姿見の鏡を部屋に置いた日のこと。
+ふと鏡の前に立ったシエロは、そこに写る自分（イケメン犬）と遭遇しました。
+
+「あ！新しいお友達だ！」と言わんばかりに尻尾をぶんぶん振り回し、お気に入りのオモチャを咥えて鏡の前へ持っていきます。
+
+ポトンとオモチャを置いて「遊ぼうよ！」とワンワン吠えるものの、鏡の中のお友達は一向にオモチャを拾ってくれません。
+最後は「なんで遊んでくれないの？」という顔で鏡の後ろを覗き込んで首をかしげていました。''',
+    ),
+    Story(
+      id: '4',
+      title: '【初めての水たまり】歩道を歩いていたらまさかの深さに驚愕',
+      date: '2024/08/04',
+      content: '''雨上がりの散歩道。
+楽しそうに先頭を歩いていたシエロは、アスファルトにある浅い水たまりを見つけました。
+
+豪快にバシャバシャ踏み込んで遊ぶのかと思いきや…
+足先が少し濡れた瞬間、「ひゃんっ！？」と奇声を上げて垂直ジャンプ！
+
+想像以上に冷たかったのか、足が濡れたのが嫌だったのか、そこからは水たまりを一つ一つ丁寧に回避する「慎重派シエロ」に変身しました。''',
+    ),
+    Story(
+      id: '5',
+      title: '【初めてのプール】足がつかない！エア水泳を披露',
+      date: '2024/08/05',
+      content: '''暑い夏の日、ドッグランの小型犬用プールに初挑戦。
+水が怖くないように抱っこして、ゆっくりと水面に近づけていくと…
+
+水に入る前から、足が空中でバタバタバタ！！
+見事な「エア犬かき」を披露してくれました。
+
+実際に足がつく浅瀬に着地すると、「あれ？足届くじゃん」と気づいた様子。
+そこからはパシャパシャと気持ちよさそうに歩き回っていました。''',
+    ),
+    Story(
+      id: '6',
+      title: '【初めてのコスプレ】ライオンのたてがみでフリーズ',
+      date: '2024/08/06',
+      content: '''ハロウィン用に買ったライオンのたてがみウィッグ。
+シエロにかぶせてみると…ぴったり！可愛すぎる百獣の王の誕生です！
+
+しかし、当の本人は違和感からか「ピタッ」と微動だにせずフリーズ。
+ロボットのようにカチコチになったまま、目だけをキョロキョロさせて救いを求めてきました。
+
+「かっこいいよー！」と褒めちぎると、調子に乗って尻尾を振り始めましたが、歩くときはやっぱりロボット歩きでした。''',
+    ),
+    Story(
+      id: '7',
+      title: '【初めてのドッグラン】他の犬に圧倒されて飼い主の足元に避難',
+      date: '2024/08/07',
+      content: '''広大なドッグランにデビュー！
+家では威勢のいいシエロですが、大きなワンちゃんや元気なワンちゃんたちが一斉に挨拶（クンクン）しに集まってくると…
+
+目が泳ぎ始め、そのまま飼い主の足の間にスポッと挟まって避難！
+「ボクはいません、ただの置物です」と言わんばかりに存在感を消そうとしていました。
+
+慣れてくると自分と同じサイズのワンちゃんと追いかけっこを楽しんでいました。''',
+    ),
+    Story(
+      id: '8',
+      title: '【初めてのエレベーター】床が動く謎の部屋に困惑',
+      date: '2024/08/08',
+      content: '''マンションのエレベーターに初めて乗った時。
+扉が閉まり、「ウィーン」と浮遊感が襲うと、シエロは不思議そうに足元をジッと見つめました。
+
+「床が動いている…！？」とペタッと伏せの姿勢をとって警戒態勢に。
+
+目的の階に着いて「チン♪」と音が鳴り扉が開くと、弾丸のようなスピードで外へダッシュ！
+「ふぅ、あやうく閉じ込められるところだったワン…」と胸をなでおろしていました。''',
+    ),
+    Story(
+      id: '9',
+      title: '【初めてのシャンプー】お風呂場で別の生き物に変身',
+      date: '2024/08/09',
+      content: '''お風呂の時間。シャワーで体が濡れると…
+普段のフワフワな毛ぶきが嘘のようにしぼんで、まるで「細身の宇宙人」のような姿に！
+
+「誰ですか！？」と思わず突っ込みたくなる変身ぶりです。
+
+ドライヤーで乾かしてもらうと、再びフワフワの綿あめシエロに復活。
+自分の体の変わりように、鏡を見て自分でもびっくりしているようでした。''',
+    ),
+    Story(
+      id: '10',
+      title: '【初めての雪】冷たい白い粉にテンション爆発',
+      date: '2024/08/10',
+      content: '''冬の朝、庭にうっすらと雪が積もりました。
+外に出たシエロは、足元に広がる真っ白な景色に大興奮！
+
+鼻先を雪に突っ込んで「ズボッ」、そのまま前足で雪を掘って「バシャバシャ！」。
+顔中を真っ白にして大はしゃぎしていました。
+
+家に入った後は、暖かいこたつの前でポカポカになりながら爆睡。
+夢の中でも雪の中で走っていたのか、足をピクピク動かしていました。''',
+    ),
   ];
 
   @override
   void initState() {
     super.initState();
-    _loadData();
-    _searchController.addListener(_filterIncidents);
+    _loadStories();
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _incidents = _initialData.map((inc) {
-        inc.likes = prefs.getInt('likes_' + inc.id) ?? inc.likes;
-        return inc;
-      }).toList();
-      _filteredIncidents = _incidents;
-    });
+    final String? storiesJson = prefs.getString('saved_stories');
+    if (storiesJson != null && storiesJson.isNotEmpty) {
+      final List<dynamic> decoded = jsonDecode(storiesJson);
+      setState(() {
+        stories = decoded.map((item) => Story.fromJson(item)).toList();
+      });
+    } else {
+      setState(() {
+        stories = List.from(initialStories);
+      });
+      _saveStories();
+    }
   }
 
-  void _filterIncidents() {
-    final query = _searchController.text.toLowerCase();
-    setState(() {
-      _filteredIncidents = _incidents.where((inc) {
-        return inc.title.toLowerCase().contains(query) ||
-               inc.content.toLowerCase().contains(query);
-      }).toList();
-    });
+  Future<void> _saveStories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String encoded = jsonEncode(stories.map((s) => s.toJson()).toList());
+    await prefs.setString('saved_stories', encoded);
   }
 
-  void _showRandomIncident() {
-    if (_incidents.isEmpty) return;
-    final random = Random();
-    final incident = _incidents[random.nextInt(_incidents.length)];
-    _showIncidentDialog(incident);
-  }
+  void _addOrEditStory({Story? story}) {
+    final titleController = TextEditingController(text: story?.title ?? '');
+    final dateController = TextEditingController(text: story?.date ?? '');
+    final contentController = TextEditingController(text: story?.content ?? '');
 
-  void _showIncidentDialog(Incident incident) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(incident.title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(incident.date, style: const TextStyle(color: Colors.grey)),
-            const SizedBox(height: 10),
-            Text(incident.content),
-          ],
+        title: Text(story == null ? '新しい事件を投稿' : '事件を編集'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: titleController,
+                decoration: const InputDecoration(labelText: 'タイトル'),
+              ),
+              TextField(
+                controller: dateController,
+                decoration: const InputDecoration(labelText: '日付 (例: 2024/08/01)'),
+              ),
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(labelText: '本文'),
+                maxLines: 5,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('閉じる'),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (titleController.text.isNotEmpty) {
+                setState(() {
+                  if (story == null) {
+                    stories.insert(
+                      0,
+                      Story(
+                        id: DateTime.now().millisecondsSinceEpoch.toString(),
+                        title: titleController.text,
+                        date: dateController.text,
+                        content: contentController.text,
+                      ),
+                    );
+                  } else {
+                    story.title = titleController.text;
+                    story.date = dateController.text;
+                    story.content = contentController.text;
+                  }
+                });
+                _saveStories();
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deleteStory(Story story) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('削除の確認'),
+        content: Text('「${story.title}」を削除しますか？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              setState(() {
+                stories.removeWhere((s) => s.id == story.id);
+              });
+              _saveStories();
+              Navigator.pop(context);
+            },
+            child: const Text('削除', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -126,57 +314,143 @@ class _IncidentListPageState extends State<IncidentListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredStories = stories.where((story) {
+      return story.title.contains(searchQuery) || story.content.contains(searchQuery);
+    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('🐾 シエロのクスッと笑える事件簿 🐾'),
         centerTitle: true,
-        backgroundColor: Colors.lightBlue,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.lightBlueAccent,
+        actions: [
+          Row(
+            children: [
+              Text(
+                isAdminMode ? '管理者' : '読者',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Switch(
+                value: isAdminMode,
+                onChanged: (value) {
+                  setState(() {
+                    isAdminMode = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: TextField(
-              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'キーワードで検索...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               ),
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: _showRandomIncident,
-            icon: const Icon(Icons.casino),
-            label: const Text('ランダムで事件を読む！'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.lightBlue,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _filteredIncidents.length,
-              itemBuilder: (context, index) {
-                final incident = _filteredIncidents[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  child: ListTile(
-                    leading: const Icon(Icons.pets, color: Colors.lightBlue),
-                    title: Text(incident.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(incident.date),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showIncidentDialog(incident),
-                  ),
-                );
+              onChanged: (value) {
+                setState(() {
+                  searchQuery = value;
+                });
               },
             ),
           ),
+          Expanded(
+            child: filteredStories.isEmpty
+                ? const Center(child: Text('該当する記事がありません'))
+                : ListView.builder(
+                    itemCount: filteredStories.length,
+                    itemBuilder: (context, index) {
+                      final story = filteredStories[index];
+                      return Card(
+                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        child: ListTile(
+                          leading: const Icon(Icons.pets, color: Colors.lightBlue),
+                          title: Text(
+                            story.title,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(story.date),
+                          trailing: isAdminMode
+                              ? Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit, color: Colors.orange),
+                                      onPressed: () => _addOrEditStory(story: story),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete, color: Colors.red),
+                                      onPressed: () => _deleteStory(story),
+                                    ),
+                                  ],
+                                )
+                              : const Icon(Icons.chevron_right),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => StoryDetailPage(story: story),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+          ),
         ],
+      ),
+      floatingActionButton: isAdminMode
+          ? FloatingActionButton(
+              onPressed: () => _addOrEditStory(),
+              backgroundColor: Colors.lightBlueAccent,
+              child: const Icon(Icons.add),
+            )
+          : null,
+    );
+  }
+}
+
+class StoryDetailPage extends StatelessWidget {
+  final Story story;
+
+  const StoryDetailPage({super.key, required this.story});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(story.title),
+        backgroundColor: Colors.lightBlueAccent,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              story.date,
+              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            ),
+            const SizedBox(height: 15),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Text(
+                  story.content,
+                  style: const TextStyle(fontSize: 16, height: 1.6),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
