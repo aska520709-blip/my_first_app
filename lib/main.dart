@@ -54,16 +54,6 @@ class Incident {
       likes: json['likes'] ?? 0,
     );
   }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'date': date,
-      'content': content,
-      'likes': likes,
-    };
-  }
 }
 
 class IncidentListPage extends StatefulWidget {
@@ -78,7 +68,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
   List<Incident> _filteredIncidents = [];
   final TextEditingController _searchController = TextEditingController();
   Set<String> _likedIncidentIds = {};
-  bool _isAdminMode = false;
 
   @override
   void initState() {
@@ -113,52 +102,21 @@ class _IncidentListPageState extends State<IncidentListPage> {
     try {
       final prefs = await SharedPreferences.getInstance();
       
+      // JSONファイルから直接読み込み
       final String response = await rootBundle.loadString('assets/incidents.json');
       final List<dynamic> jsonAssetData = json.decode(response);
-      final List<Incident> assetIncidents = jsonAssetData.map((j) => Incident.fromJson(j)).toList();
+      List<Incident> loadedIncidents = jsonAssetData.map((j) => Incident.fromJson(j)).toList();
 
-      final String? userAddedJson = prefs.getString('user_added_incidents');
-      List<Incident> userIncidents = [];
-      if (userAddedJson != null && userAddedJson.isNotEmpty) {
-        final List<dynamic> decodedUser = json.decode(userAddedJson);
-        userIncidents = decodedUser.map((j) => Incident.fromJson(j)).toList();
-      }
-
-      final List<String> deletedIds = prefs.getStringList('deleted_incident_ids') ?? [];
-
-      final Map<String, Incident> combinedMap = {};
-      for (var inc in assetIncidents) {
-        combinedMap[inc.id] = inc;
-      }
-      for (var inc in userIncidents) {
-        combinedMap[inc.id] = inc;
-      }
-
-      List<Incident> finalList = combinedMap.values.where((inc) => !deletedIds.contains(inc.id)).toList();
-      for (var inc in finalList) {
+      for (var inc in loadedIncidents) {
         inc.likes = prefs.getInt('likes_' + inc.id) ?? inc.likes;
       }
 
-      finalList.sort((a, b) => b.date.compareTo(a.date));
-
       setState(() {
-        _allIncidents = finalList;
-        _filteredIncidents = finalList;
+        _allIncidents = loadedIncidents;
+        _filteredIncidents = loadedIncidents;
       });
     } catch (e) {
-      debugPrint('Error loading incidents: $e');
-    }
-  }
-
-  Future<void> _resetDataToAssets() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('user_added_incidents');
-    await prefs.remove('deleted_incident_ids');
-    await _loadIncidents();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('データリセット完了！最新のJSONを表示します🐾')),
-      );
+      debugPrint('Error loading incidents: ' + e.toString());
     }
   }
 
@@ -166,50 +124,10 @@ class _IncidentListPageState extends State<IncidentListPage> {
     final query = _searchController.text.toLowerCase();
     setState(() {
       _filteredIncidents = _allIncidents.where((incident) {
-        final matchesSearch = incident.title.toLowerCase().contains(query) ||
+        return incident.title.toLowerCase().contains(query) ||
             incident.content.toLowerCase().contains(query);
-        return matchesSearch;
       }).toList();
     });
-  }
-
-  void _deleteIncident(Incident incident) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('事件の削除'),
-        content: Text('「' + incident.title + '」を本当に削除しますか？'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              
-              final List<String> deletedIds = prefs.getStringList('deleted_incident_ids') ?? [];
-              if (!deletedIds.contains(incident.id)) {
-                deletedIds.add(incident.id);
-                await prefs.setStringList('deleted_incident_ids', deletedIds);
-              }
-
-              setState(() {
-                _allIncidents.removeWhere((item) => item.id == incident.id);
-                _filterIncidents();
-              });
-
-              if (mounted) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('削除する', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showRandomIncident() {
@@ -217,68 +135,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
     final random = Random();
     final randomIncident = _allIncidents[random.nextInt(_allIncidents.length)];
     _showIncidentDetail(randomIncident);
-  }
-
-  void _showAddIncidentDialog() {
-    final titleController = TextEditingController();
-    final contentController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新しい事件を追加 🐾'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(labelText: 'タイトル'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: contentController,
-                decoration: const InputDecoration(labelText: '事件内容'),
-                maxLines: 4,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('キャンセル'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              if (titleController.text.isEmpty || contentController.text.isEmpty) return;
-              final now = DateTime.now();
-              final newIncident = Incident(
-                id: now.millisecondsSinceEpoch.toString(),
-                title: titleController.text,
-                date: now.year.toString() + '/' + now.month.toString().toString().padLeft(2, "0") + '/' + now.day.toString().toString().padLeft(2, "0"),
-                content: contentController.text,
-                likes: 0,
-              );
-
-              final prefs = await SharedPreferences.getInstance();
-              final String? userAddedJson = prefs.getString('user_added_incidents');
-              List<dynamic> userList = userAddedJson != null ? json.decode(userAddedJson) : [];
-              userList.insert(0, newIncident.toJson());
-              await prefs.setString('user_added_incidents', json.encode(userList));
-
-              setState(() {
-                _allIncidents.insert(0, newIncident);
-                _filterIncidents();
-              });
-
-              if (mounted) Navigator.pop(context);
-            },
-            child: const Text('追加'),
-          ),
-        ],
-      ),
-    );
   }
 
   void _showIncidentDetail(Incident incident) {
@@ -352,19 +208,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
                       ),
                     ),
                     const Spacer(),
-                    if (_isAdminMode) ...[
-                      OutlinedButton.icon(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        onPressed: () => _deleteIncident(incident),
-                        icon: const Icon(Icons.delete_outline, size: 18),
-                        label: const Text('削除'),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1E88E5),
@@ -431,60 +274,15 @@ class _IncidentListPageState extends State<IncidentListPage> {
           ),
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: Wrap(
-              alignment: WrapAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _showRandomIncident,
-                  icon: const Icon(Icons.casino, color: Colors.white),
-                  label: const Text('ランダムで事件を読む！', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF29B6F6),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _isAdminMode = !_isAdminMode;
-                    });
-                  },
-                  icon: Icon(
-                    _isAdminMode ? Icons.admin_panel_settings : Icons.person_outline,
-                    color: _isAdminMode ? Colors.orange[800] : const Color(0xFF1E88E5),
-                  ),
-                  label: Text(
-                    _isAdminMode ? '👑 管理者モード中' : '👤 読者モード中',
-                    style: TextStyle(
-                      color: _isAdminMode ? Colors.orange[800] : const Color(0xFF1E88E5),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: _isAdminMode ? Colors.orange[50] : Colors.white,
-                    side: BorderSide(
-                      color: _isAdminMode ? Colors.orange : const Color(0xFF1E88E5),
-                      width: 1.5,
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                  ),
-                ),
-                if (_isAdminMode)
-                  ElevatedButton.icon(
-                    onPressed: _resetDataToAssets,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    label: const Text('JSON同期/全リセット', style: TextStyle(color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                  ),
-              ],
+            child: ElevatedButton.icon(
+              onPressed: _showRandomIncident,
+              icon: const Icon(Icons.casino, color: Colors.white),
+              label: const Text('ランダムで事件を読む！', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF29B6F6),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
             ),
           ),
           Expanded(
@@ -546,15 +344,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
           ),
         ],
       ),
-      floatingActionButton: _isAdminMode
-          ? FloatingActionButton.extended(
-              onPressed: _showAddIncidentDialog,
-              backgroundColor: const Color(0xFF1E88E5),
-              icon: const Icon(Icons.add, color: Colors.white),
-              label: const Text('新規事件を追加', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-            )
-          : null,
     );
   }
 }
- 
