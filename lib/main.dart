@@ -429,7 +429,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${widget.story.date}  (${widget.story.dogBreed})',
+                  widget.story.date,
                   style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 ElevatedButton.icon(
