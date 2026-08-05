@@ -155,7 +155,7 @@ class _StoryListPageState extends State<StoryListPage> {
 目が泳ぎ始め、そのまま飼い主の足の間にスポッと挟まって避難！
 「ボクはいません、ただの置物です」と言わんばかりに存在感を消そうとしていました。
 
-慣れてくると自分と同じサイズのワンちゃんと追いかけっこを楽しんでいました。''',
+慣れてくると自分と同じサイズのワンちゃんとおっかけっこを楽しんでいました。''',
     ),
     Story(
       id: '8',
@@ -204,6 +204,13 @@ class _StoryListPageState extends State<StoryListPage> {
 
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
+    // 日付更新用のバージョンチェック
+    final String? version = prefs.getString('data_version');
+    if (version != '2026_v1') {
+      await prefs.clear();
+      await prefs.setString('data_version', '2026_v1');
+    }
+
     final String? storiesJson = prefs.getString('saved_stories');
     if (storiesJson != null && storiesJson.isNotEmpty) {
       final List<dynamic> decoded = jsonDecode(storiesJson);
