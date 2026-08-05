@@ -27,6 +27,7 @@ class Story {
   String id;
   String title;
   String date;
+  String dogBreed;
   String content;
   int likes;
 
@@ -34,6 +35,7 @@ class Story {
     required this.id,
     required this.title,
     required this.date,
+    required this.dogBreed,
     required this.content,
     this.likes = 0,
   });
@@ -42,6 +44,7 @@ class Story {
         'id': id,
         'title': title,
         'date': date,
+        'dogBreed': dogBreed,
         'content': content,
         'likes': likes,
       };
@@ -50,6 +53,7 @@ class Story {
         id: json['id'] ?? '',
         title: json['title'] ?? '',
         date: json['date'] ?? '',
+        dogBreed: json['dogBreed'] ?? 'トイプードル',
         content: json['content'] ?? '',
         likes: json['likes'] ?? 0,
       );
@@ -69,130 +73,74 @@ class _StoryListPageState extends State<StoryListPage> {
 
   final List<Story> initialStories = [
     Story(
-      id: '1',
-      title: '【初めての自動掃除機】謎の動きをする箱に必死の威嚇',
-      date: '2026/08/01',
-      content: '''我が家にやってきた自動掃除機（ルンバ）。
-ウィーンと音を立てて動き出した瞬間、シエロの目が点になりました。
-
-「な、なんだこの生き物は…！？」
-
-低い姿勢をとって「ウゥ〜ッ」と威嚇を開始。
-掃除機が近づいてくると、脱兎のごとくソファの上に避難！
-ソファの上から必死に前足パンチ（届いていない）を繰り出して戦っていました。
-
-今ではすっかり慣れて、動く掃除機の後ろをドヤ顔でストーカーのように追跡しています。''',
+      id: "1",
+      title: "【初めての自動掃除機】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "リビングに突如あらわれたブーンと鳴る丸い物体。シエロは「我が家の平和を守らねば！」と果敢にワンワン吠えて威嚇を開始。しかし、自動掃除機が一切動じずにスーッと自分に向かって進んでくると、一瞬で敗北を悟り、ソファの上に避難。上から必死に「こっち来るな！」と前足でチョップを繰り出していました。最終的に掃除機が壁に当たってターンしたのを見て、「よし、追い払ったぞ」と言いたげなドヤ顔を決めていました。",
     ),
     Story(
-      id: '2',
-      title: '【初めてのカミナリ】へそ天からの瞬時に潜り込み',
-      date: '2026/08/02',
-      content: '''ヘソ天（仰向け）で爆睡していた夏の日。
-突如「ゴロゴロ…ドカン！」と大きな雷鳴が轟きました。
-
-その瞬間、シエロは目にも留まらぬ速さで跳ね起き、飼い主の膝掛けブランケットの中に一直線！
-完全に頭から潜り込んで、お尻だけが丸見え状態に。
-
-「頭隠して尻隠さず」を地で行くシエロ。
-しばらくの間、ブランケットの中でプルプル震えながら飼い主の手に鼻先を押し付けて甘えていました。''',
+      id: "2",
+      title: "【初めてのサマーカット】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "トリミングから帰宅し、すっかり首回りがスッキリしたシエロ。ふと姿見の鏡の前に立った瞬間、「え、誰……？」という顔でピタッとフリーズ。一度後ずさりしてから、もう一度鏡を覗き込み、自分の体の匂いをクンクン。間違いなく自分だと理解した途端、急に自分のしっぽや胴体を不思議そうに追いかけ回し始めました。しばらくの間、「僕の毛皮、どこやったの？」と言いたげな瞳でこちらを見つめていました。",
     ),
     Story(
-      id: '3',
-      title: '【初めての鏡】鏡に映る自分とお友達になりたくて…',
-      date: '2026/08/03',
-      content: '''姿見の鏡を部屋に置いた日のこと。
-ふと鏡の前に立ったシエロは、そこに写る自分（イケメン犬）と遭遇しました。
-
-「あ！新しいお友達だ！」と言わんばかりに尻尾をぶんぶん振り回し、お気に入りのオモチャを咥えて鏡の前へ持っていきます。
-
-ポトンとオモチャを置いて「遊ぼうよ！」とワンワン吠えるものの、鏡の中のお友達は一向にオモチャを拾ってくれません。
-最後は「なんで遊んでくれないの？」という顔で鏡の後ろを覗き込んで首をかしげていました。''',
+      id: "3",
+      title: "【初めての焼き芋】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "普段はおやつを見ても「お上品」にお座りするシエロ。しかし、ほくほくの焼き芋を小さくちぎって鼻先に近づけた瞬間、目が限界まで見開かれました。ひと口食べた瞬間、雷が落ちたような衝撃を受けたようで、未だかつてない素早さで「おかわり！」のお手・おかわり・ハイタッチをノータイムで高速連打。食べ終わったあとも、焼き芋が入っていた袋の「空気」をずっと吸い込んでいました。",
     ),
     Story(
-      id: '4',
-      title: '【初めての水たまり】歩道を歩いていたらまさかの深さに驚愕',
-      date: '2026/08/04',
-      content: '''雨上がりの散歩道。
-楽しそうに先頭を歩いていたシエロは、アスファルトにある浅い水たまりを見つけました。
-
-豪快にバシャバシャ踏み込んで遊ぶのかと思いきや…
-足先が少し濡れた瞬間、「ひゃんっ！？」と奇声を上げて垂直ジャンプ！
-
-想像以上に冷たかったのか、足が濡れたのが嫌だったのか、そこからは水たまりを一つ一つ丁寧に回避する「慎重派シエロ」に変身しました。''',
+      id: "4",
+      title: "【初めてのお風呂】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "お風呂場に連れていかれ、シャワーの音が響いた瞬間、すべてを悟ったシエロ。「僕は今、人生最大の危機に瀕している」と言わんばかりに、風呂場の隅で虚無の表情を浮かべて完全にフリーズ。ぬるま湯がかかると「たすけて……」という目で見つめてくるものの、シャンプーが終わってバスタオルで包んだ瞬間、スイッチが完全に切り替わりました。「お風呂から生還したぞーーー！」と言わんばかりにテンションが爆発し、リビングのカーペットに顔を擦り付けながら猛スピードで猛ダッシュ。乾かし終わる頃には自分の達成感に酔いしれて、ドヤ顔でぐっすり眠っていました。",
     ),
     Story(
-      id: '5',
-      title: '【初めてのプール】足がつかない！エア水泳を披露',
-      date: '2026/08/05',
-      content: '''暑い夏の日、ドッグランの小型犬用プールに初挑戦。
-水が怖くないように抱っこして、ゆっくりと水面に近づけていくと…
-
-水に入る前から、足が空中でバタバタバタ！！
-見事な「エア犬かき」を披露してくれました。
-
-実際に足がつく浅瀬に着地すると、「あれ？足届くじゃん」と気づいた様子。
-そこからはパシャパシャと気持ちよさそうに歩き回っていました。''',
+      id: "5",
+      title: "【初めてのドッグラン】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "「広いところで思いっきり走れるぞ！」とワクワクでドッグランに足をふみ入れたシエロ。しかし、入口をくぐった瞬間に元気いっぱいの大型犬たちが「いらっしゃい！」と一斉に駆け寄ってくると、一瞬で顔がひきつりました。そのまま飼い主の足の間にスポッとハマり、「ここが僕の安全地帯です」と言わんばかりに頑固な要塞を建築。他のわんちゃんが去ったあと、ぽつんと貸切状態になった端っこのエリアでだけ、小さく「トタトタ…」とドヤ顔で走っていました。",
     ),
     Story(
-      id: '6',
-      title: '【初めてのコスプレ】ライオンのたてがみでフリーズ',
-      date: '2026/08/06',
-      content: '''ハロウィン用に買ったライオンのたてがみウィッグ。
-シエロにかぶせてみると…ぴったり！可愛すぎる百獣の王の誕生です！
-
-しかし、当の本人は違和感からか「ピタッ」と微動だにせずフリーズ。
-ロボットのようにカチコチになったまま、目だけをキョロキョロさせて救いを求めてきました。
-
-「かっこいいよー！」と褒めちぎると、調子に乗って尻尾を振り始めましたが、歩くときはやっぱりロボット歩きでした。''',
+      id: "6",
+      title: "【初めての服】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "寒さ対策のために、可愛らしいおしゃれな洋服を着せられたシエロ。を着た瞬間、「え……体が重くて動けないシステム……？」と勘違いしたのか、ロボットのように関節を一切曲げずにカチコチに固まってしまいました。一歩も歩こうとせず、そのまま横に「コテン」と倒れて置物と化す始末。しかし、大好物のおやつの袋をカサッと鳴らした瞬間、服を着ていることも忘れて「シャキーン！」と素早く起き上がり、完璧なお座りを決めていました。",
     ),
     Story(
-      id: '7',
-      title: '【初めてのドッグラン】他の犬に圧倒されて飼い主の足元に避難',
-      date: '2026/08/07',
-      content: '''広大なドッグランにデビュー！
-家では威勢のいいシエロですが、大きなワンちゃんや元気なワンちゃんたちが一斉に挨拶（クンクン）しに集まってくると…
-
-目が泳ぎ始め、そのまま飼い主の足の間にスポッと挟まって避難！
-「ボクはいません、ただの置物です」と言わんばかりに存在感を消そうとしていました。
-
-慣れてくると自分と同じサイズのワンちゃんとおっかけっこを楽しんでいました。''',
+      id: "7",
+      title: "【初めての雪】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "朝起きて庭一面が真っ白になっているのを見て、大興奮で外へ飛び出したシエロ。最初は「冷たくてフワフワだー！」と跳ね回っていたものの、足裏に冷たさが染み込んできた瞬間にフリーズ。「聞いてない、こんなに冷たいなんて聞いてない」と言わんばかりに、片足をあげたまま固まってしまいました。抱っこで部屋に戻すと、こたつの中に吸い込まれるように潜り込み、鼻先だけをひょっこり出して二度と出てこなくなりました。",
     ),
     Story(
-      id: '8',
-      title: '【初めてのエレベーター】床が動く謎の部屋に困惑',
-      date: '2026/08/08',
-      content: '''マンションのエレベーターに初めて乗った時。
-扉が閉まり、「ウィーン」と浮遊感が襲うと、シエロは不思議そうに足元をジッと見つめました。
-
-「床が動いている…！？」とペタッと伏せの姿勢をとって警戒態勢に。
-
-目的の階に着いて「チン♪」と音が鳴り扉が開くと、弾丸のようなスピードで外へダッシュ！
-「ふぅ、あやうく閉じ込められるところだったワン…」と胸をなでおろしていました。''',
+      id: "8",
+      title: "【初めての散歩】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "ワクワクでハーネスを装着し、いざ外の世界へ足を踏み出したシエロ。「これが世界か…！」と目を輝かせたのも束の間、カサッと揺れた落ち葉ひとつに飛び上がり、風で舞ったレジ袋を謎の巨大生命体と勘違いしてパニックに。10メートル進むのに5分かかり、歩道橋の下を通る時は「天井が落ちてくるかもしれない」と言わんばかりに姿勢を限界まで低くしてほふくぜんしん。結局、全体の8割は抱っこされて移動し、家に戻った瞬間に「外は危険がいっぱいだった…」と満足げな顔で爆睡していました。",
     ),
     Story(
-      id: '9',
-      title: '【初めてのシャンプー】お風呂場で別の生き物に変身',
-      date: '2026/08/09',
-      content: '''お風呂の時間。シャワーで体が濡れると…
-普段のフワフワな毛ぶきが嘘のようにしぼんで、まるで「細身の宇宙人」のような姿に！
-
-「誰ですか！？」と思わず突っ込みたくなる変身ぶりです。
-
-ドライヤーで乾かしてもらうと、再びフワフワの綿あめシエロに復活。
-自分の体の変わりように、鏡を見て自分でもびっくりしているようでした。''',
+      id: "9",
+      title: "【初めてのお留守番】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "飼い主が「すぐ戻るからね」と声をかけてドアを閉めた瞬間、シエロの単独ミッションがスタート。最初の5分間はドアの前で「本当に帰ってくる……？」と耳を澄ませてたたずんでいましたが、静けさに慣れてくると「さて、自由時間だな」と言わんばかりにリビングのパトロールを開始。クッションにダイブしたり、自分のハウスからおもちゃを総動員して床一面に並べたりと大忙し。カギが開く音がした瞬間、慌てて「ずっと良い子で待ってましたけど？」という顔でドアの前に駆け寄り、お利口さんアピールを決めていました。（※足元には散らかったおもちゃが転がっていました）",
     ),
     Story(
-      id: '10',
-      title: '【初めての雪】冷たい白い粉にテンション爆発',
-      date: '2026/08/10',
-      content: '''冬の朝、庭にうっすらと雪が積もりました。
-外に出たシエロは、足元に広がる真っ白な景色に大興奮！
-
-鼻先を雪に突っ込んで「ズボッ」、そのまま前足で雪を掘って「バシャバシャ！」。
-顔中を真っ白にして大はしゃぎしていました。
-
-家に入った後は、暖かいこたつの前でポカポカになりながら爆睡。
-夢の中でも雪の中で走っていたのか、足をピクピク動かしていました。''',
+      id: "10",
+      title: "【初めての雨】",
+      date: "2026/08/04",
+      dogBreed: "トイプードル",
+      content: "ポツポツと音が鳴り始め、外の景色が一変した日。抱っこされて玄関から外を覗き込んだシエロは、空から降ってくる大量の「水滴」に大混乱。「空からお水が降ってくるなんて聞いてない…！」と言わんばかりに目を丸くし、自分の鼻先に一滴ぽたんと落ちた瞬間、ヒヤッとした冷たさに「ひゃん！」と小さく跳ね上がりました。水たまりを見つめては「踏んだら底なしnumaに沈むのでは…？」と警戒し、一歩も足をつけようとしません。結局、雨の音をバックに飼い主の腕の中でカチコチに固まったまま、初めての雨見学は終了しました。",
     ),
   ];
 
@@ -204,11 +152,11 @@ class _StoryListPageState extends State<StoryListPage> {
 
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
-    // 日付更新用のバージョンチェック
+    // キャッシュクリア用バージョン
     final String? version = prefs.getString('data_version');
-    if (version != '2026_v1') {
+    if (version != '2026_exact_v1') {
       await prefs.clear();
-      await prefs.setString('data_version', '2026_v1');
+      await prefs.setString('data_version', '2026_exact_v1');
     }
 
     final String? storiesJson = prefs.getString('saved_stories');
@@ -240,7 +188,8 @@ class _StoryListPageState extends State<StoryListPage> {
 
   void _addOrEditStory({Story? story}) {
     final titleController = TextEditingController(text: story?.title ?? '');
-    final dateController = TextEditingController(text: story?.date ?? '');
+    final dateController = TextEditingController(text: story?.date ?? '2026/08/04');
+    final breedController = TextEditingController(text: story?.dogBreed ?? 'トイプードル');
     final contentController = TextEditingController(text: story?.content ?? '');
 
     showDialog(
@@ -257,7 +206,11 @@ class _StoryListPageState extends State<StoryListPage> {
               ),
               TextField(
                 controller: dateController,
-                decoration: const InputDecoration(labelText: '日付 (例: 2026/08/01)'),
+                decoration: const InputDecoration(labelText: '日付 (例: 2026/08/04)'),
+              ),
+              TextField(
+                controller: breedController,
+                decoration: const InputDecoration(labelText: '犬種'),
               ),
               TextField(
                 controller: contentController,
@@ -283,12 +236,14 @@ class _StoryListPageState extends State<StoryListPage> {
                         id: DateTime.now().millisecondsSinceEpoch.toString(),
                         title: titleController.text,
                         date: dateController.text,
+                        dogBreed: breedController.text,
                         content: contentController.text,
                       ),
                     );
                   } else {
                     story.title = titleController.text;
                     story.date = dateController.text;
+                    story.dogBreed = breedController.text;
                     story.content = contentController.text;
                   }
                 });
@@ -333,7 +288,9 @@ class _StoryListPageState extends State<StoryListPage> {
   @override
   Widget build(BuildContext context) {
     final filteredStories = stories.where((story) {
-      return story.title.contains(searchQuery) || story.content.contains(searchQuery);
+      return story.title.contains(searchQuery) ||
+          story.content.contains(searchQuery) ||
+          story.dogBreed.contains(searchQuery);
     }).toList();
 
     return Scaffold(
@@ -472,7 +429,7 @@ class _StoryDetailPageState extends State<StoryDetailPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  widget.story.date,
+                  '${widget.story.date}  (${widget.story.dogBreed})',
                   style: const TextStyle(color: Colors.grey, fontSize: 14),
                 ),
                 ElevatedButton.icon(
