@@ -67,7 +67,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '1',
       title: '【初めての自動掃除機】謎の動きをする箱に必死の威嚇',
-      date: '2025/08/01',
+      date: '2026/08/01',
       content: '''我が家にやってきた自動掃除機（ルンバ）。
 ウィーンと音を立てて動き出した瞬間、シエロの目が点になりました。
 
@@ -82,7 +82,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '2',
       title: '【初めてのカミナリ】へそ天からの瞬時に潜り込み',
-      date: '2025/08/02',
+      date: '2026/08/02',
       content: '''ヘソ天（仰向け）で爆睡していた夏の日。
 突如「ゴロゴロ…ドカン！」と大きな雷鳴が轟きました。
 
@@ -95,7 +95,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '3',
       title: '【初めての鏡】鏡に映る自分とお友達になりたくて…',
-      date: '2025/08/03',
+      date: '2026/08/03',
       content: '''姿見の鏡を部屋に置いた日のこと。
 ふと鏡の前に立ったシエロは、そこに写る自分（イケメン犬）と遭遇しました。
 
@@ -107,7 +107,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '4',
       title: '【初めての水たまり】歩道を歩いていたらまさかの深さに驚愕',
-      date: '2025/08/04',
+      date: '2026/08/04',
       content: '''雨上がりの散歩道。
 楽しそうに先頭を歩いていたシエロは、アスファルトにある浅い水たまりを見つけました。
 
@@ -119,7 +119,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '5',
       title: '【初めてのプール】足がつかない！エア水泳を披露',
-      date: '2025/08/05',
+      date: '2026/08/05',
       content: '''暑い夏の日、ドッグランの小型犬用プールに初挑戦。
 水が怖くないように抱っこして、ゆっくりと水面に近づけていくと…
 
@@ -132,7 +132,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '6',
       title: '【初めてのコスプレ】ライオンのたてがみでフリーズ',
-      date: '2025/08/06',
+      date: '2026/08/06',
       content: '''ハロウィン用に買ったライオンのたてがみウィッグ。
 シエロにかぶせてみると…ぴったり！可愛すぎる百獣の王の誕生です！
 
@@ -144,7 +144,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '7',
       title: '【初めてのドッグラン】他の犬に圧倒されて飼い主の足元に避難',
-      date: '2025/08/07',
+      date: '2026/08/07',
       content: '''広大なドッグランにデビュー！
 家では威勢のいいシエロですが、大きなワンちゃんや元気なワンちゃんたちが一斉に挨拶（クンクン）しに集まってくると…
 
@@ -156,7 +156,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '8',
       title: '【初めてのエレベーター】床が動く謎の部屋に困惑',
-      date: '2025/08/08',
+      date: '2026/08/08',
       content: '''マンションのエレベーターに初めて乗った時。
 扉が閉まり、「ウィーン」と浮遊感が襲うと、シエロは不思議そうに足元をジッと見つめました。
 
@@ -168,7 +168,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '9',
       title: '【初めてのシャンプー】お風呂場で別の生き物に変身',
-      date: '2025/08/09',
+      date: '2026/08/09',
       content: '''お風呂の時間。シャワーで体が濡れると…
 普段のフワフワな毛ぶきが嘘のようにしぼんで、まるで「細身の宇宙人」のような姿に！
 
@@ -180,7 +180,7 @@ class _StoryListPageState extends State<StoryListPage> {
     Story(
       id: '10',
       title: '【初めての雪】冷たい白い粉にテンション爆発',
-      date: '2025/08/10',
+      date: '2026/08/10',
       content: '''冬の朝、庭にうっすらと雪が積もりました。
 外に出たシエロは、足元に広がる真っ白な景色に大興奮！
 
@@ -239,7 +239,7 @@ class _StoryListPageState extends State<StoryListPage> {
               ),
               TextField(
                 controller: dateController,
-                decoration: const InputDecoration(labelText: '日付 (例: 2025/08/01)'),
+                decoration: const InputDecoration(labelText: '日付 (例: 2026/08/01)'),
               ),
               TextField(
                 controller: contentController,
