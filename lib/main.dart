@@ -108,7 +108,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
       List<Incident> loadedIncidents = jsonAssetData.map((j) => Incident.fromJson(j)).toList();
 
       for (var inc in loadedIncidents) {
-        inc.likes = prefs.getInt('likes_' + inc.id) ?? inc.likes;
+        
       }
 
       setState(() {
