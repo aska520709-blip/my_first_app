@@ -28,12 +28,14 @@ class Story {
   String title;
   String date;
   String content;
+  int likes;
 
   Story({
     required this.id,
     required this.title,
     required this.date,
     required this.content,
+    this.likes = 0,
   });
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +43,7 @@ class Story {
         'title': title,
         'date': date,
         'content': content,
+        'likes': likes,
       };
 
   factory Story.fromJson(Map<String, dynamic> json) => Story(
@@ -48,6 +51,7 @@ class Story {
         title: json['title'] ?? '',
         date: json['date'] ?? '',
         content: json['content'] ?? '',
+        likes: json['likes'] ?? 0,
       );
 }
 
@@ -220,6 +224,13 @@ class _StoryListPageState extends State<StoryListPage> {
     await prefs.setString('saved_stories', encoded);
   }
 
+  void _incrementLike(Story story) {
+    setState(() {
+      story.likes++;
+    });
+    _saveStories();
+  }
+
   void _addOrEditStory({Story? story}) {
     final titleController = TextEditingController(text: story?.title ?? '');
     final dateController = TextEditingController(text: story?.date ?? '');
@@ -377,27 +388,35 @@ class _StoryListPageState extends State<StoryListPage> {
                             story.title,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text(story.date),
-                          trailing: isAdminMode
-                              ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit, color: Colors.orange),
-                                      onPressed: () => _addOrEditStory(story: story),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete, color: Colors.red),
-                                      onPressed: () => _deleteStory(story),
-                                    ),
-                                  ],
-                                )
-                              : const Icon(Icons.chevron_right),
+                          subtitle: Text('${story.date}   ❤️ ${story.likes}'),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.favorite, color: Colors.pinkAccent),
+                                onPressed: () => _incrementLike(story),
+                              ),
+                              if (isAdminMode) ...[
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.orange),
+                                  onPressed: () => _addOrEditStory(story: story),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.delete, color: Colors.red),
+                                  onPressed: () => _deleteStory(story),
+                                ),
+                              ] else
+                                const Icon(Icons.chevron_right),
+                            ],
+                          ),
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => StoryDetailPage(story: story),
+                                builder: (context) => StoryDetailPage(
+                                  story: story,
+                                  onLike: () => _incrementLike(story),
+                                ),
                               ),
                             );
                           },
@@ -419,16 +438,22 @@ class _StoryListPageState extends State<StoryListPage> {
   }
 }
 
-class StoryDetailPage extends StatelessWidget {
+class StoryDetailPage extends StatefulWidget {
   final Story story;
+  final VoidCallback onLike;
 
-  const StoryDetailPage({super.key, required this.story});
+  const StoryDetailPage({super.key, required this.story, required this.onLike});
 
+  @override
+  State<StoryDetailPage> createState() => _StoryDetailPageState();
+}
+
+class _StoryDetailPageState extends State<StoryDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(story.title),
+        title: Text(widget.story.title),
         backgroundColor: Colors.lightBlueAccent,
       ),
       body: Padding(
@@ -436,15 +461,29 @@ class StoryDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              story.date,
-              style: const TextStyle(color: Colors.grey, fontSize: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.story.date,
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      widget.onLike();
+                    });
+                  },
+                  icon: const Icon(Icons.favorite, color: Colors.pinkAccent),
+                  label: Text('いいね！ (${widget.story.likes})'),
+                ),
+              ],
             ),
             const SizedBox(height: 15),
             Expanded(
               child: SingleChildScrollView(
                 child: Text(
-                  story.content,
+                  widget.story.content,
                   style: const TextStyle(fontSize: 16, height: 1.6),
                 ),
               ),
