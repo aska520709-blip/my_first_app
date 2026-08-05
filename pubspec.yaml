@@ -24,4 +24,4 @@ flutter:
   uses-material-design: true
 
 assets:
-    - assets/incidents.json
+    - assets/incidents.json# trigger rebuild
