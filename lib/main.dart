@@ -47,7 +47,7 @@ class Incident {
 
   factory Incident.fromJson(Map<String, dynamic> json) {
     return Incident(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       title: json['title'] ?? '',
       date: json['date'] ?? '',
       content: json['content'] ?? '',
@@ -106,7 +106,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
       }
     });
     await prefs.setStringList('liked_incidents', _likedIncidentIds.toList());
-    await prefs.setInt('likes_${incident.id}', incident.likes);
+    await prefs.setInt('likes_' + incident.id, incident.likes);
   }
 
   Future<void> _loadIncidents() async {
@@ -127,19 +127,19 @@ class _IncidentListPageState extends State<IncidentListPage> {
       final List<String> deletedIds = prefs.getStringList('deleted_incident_ids') ?? [];
 
       final Map<String, Incident> combinedMap = {};
-      for (var inc in userIncidents) {
+      for (var inc in assetIncidents) {
         combinedMap[inc.id] = inc;
       }
-      for (var inc in assetIncidents) {
-        if (!combinedMap.containsKey(inc.id)) {
-          combinedMap[inc.id] = inc;
-        }
+      for (var inc in userIncidents) {
+        combinedMap[inc.id] = inc;
       }
 
       List<Incident> finalList = combinedMap.values.where((inc) => !deletedIds.contains(inc.id)).toList();
       for (var inc in finalList) {
-        inc.likes = prefs.getInt('likes_${inc.id}') ?? inc.likes;
+        inc.likes = prefs.getInt('likes_' + inc.id) ?? inc.likes;
       }
+
+      finalList.sort((a, b) => b.date.compareTo(a.date));
 
       setState(() {
         _allIncidents = finalList;
@@ -147,6 +147,18 @@ class _IncidentListPageState extends State<IncidentListPage> {
       });
     } catch (e) {
       debugPrint('Error loading incidents: $e');
+    }
+  }
+
+  Future<void> _resetDataToAssets() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('user_added_incidents');
+    await prefs.remove('deleted_incident_ids');
+    await _loadIncidents();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('データリセット完了！最新のJSONを表示します🐾')),
+      );
     }
   }
 
@@ -166,7 +178,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('事件の削除'),
-        content: Text('「${incident.title}」を本当に削除しますか？'),
+        content: Text('「' + incident.title + '」を本当に削除しますか？'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -183,13 +195,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
                 await prefs.setStringList('deleted_incident_ids', deletedIds);
               }
 
-              final String? userAddedJson = prefs.getString('user_added_incidents');
-              if (userAddedJson != null) {
-                List<dynamic> userList = json.decode(userAddedJson);
-                userList.removeWhere((item) => item['id'] == incident.id);
-                await prefs.setString('user_added_incidents', json.encode(userList));
-              }
-
               setState(() {
                 _allIncidents.removeWhere((item) => item.id == incident.id);
                 _filterIncidents();
@@ -198,9 +203,6 @@ class _IncidentListPageState extends State<IncidentListPage> {
               if (mounted) {
                 Navigator.pop(context);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('事件を削除しました')),
-                );
               }
             },
             child: const Text('削除する', style: TextStyle(color: Colors.white)),
@@ -254,7 +256,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
               final newIncident = Incident(
                 id: now.millisecondsSinceEpoch.toString(),
                 title: titleController.text,
-                date: "${now.year}/${now.month}/${now.day}",
+                date: now.year.toString() + '/' + now.month.toString().toString().padLeft(2, "0") + '/' + now.day.toString().toString().padLeft(2, "0"),
                 content: contentController.text,
                 likes: 0,
               );
@@ -345,7 +347,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
                             size: 28,
                           ),
                           const SizedBox(width: 6),
-                          Text('${incident.likes}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(incident.likes.toString(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -471,6 +473,17 @@ class _IncidentListPageState extends State<IncidentListPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
                 ),
+                if (_isAdminMode)
+                  ElevatedButton.icon(
+                    onPressed: _resetDataToAssets,
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    label: const Text('JSON同期/全リセット', style: TextStyle(color: Colors.white)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                  ),
               ],
             ),
           ),
@@ -512,7 +525,7 @@ class _IncidentListPageState extends State<IncidentListPage> {
                                     color: isLiked ? Colors.red : Colors.grey,
                                   ),
                                   const SizedBox(width: 4),
-                                  Text('${incident.likes}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+                                  Text(incident.likes.toString(), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
                                 ],
                               ),
                             ),
