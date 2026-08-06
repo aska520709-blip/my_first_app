@@ -91,7 +91,7 @@ class _StoryListPageState extends State<StoryListPage> {
       title: "【初めての焼き芋】",
       date: "2026/08/04",
       dogBreed: "トイプードル",
-      content: "普段はおやつを見ても「お上品」にお座りするシエロ。しかし、ほくほくの焼き芋を小さくちぎって鼻先に近づけた瞬間、目が限界まで見開かれました。ひと口食べた瞬間、雷が落ちたような衝撃を受けたようで、未だかつてない素早さで「おかわり！」のお手・おかわり・ハイタッチをノータイムで高速連打。食べ終わったあとも、焼き芋が入っていた袋の「空気」をずっと吸い込んでいました。",
+      content: "普段はおやつを見ても「お上品」にお座りするシエロ。しかし、ほくほくの焼き芋を小さくちぎって鼻気に近づけた瞬間、目が限界まで見開かれました。ひと口食べた瞬間、雷が落ちたような衝撃を受けたようで、未だかつてない素早さで「おかわり！」のお手・おかわり・ハイタッチをノータイムで高速連打。食べ終わったあとも、焼き芋が入っていた袋の「空気」をずっと吸い込んでいました。",
     ),
     Story(
       id: "4",
@@ -140,7 +140,7 @@ class _StoryListPageState extends State<StoryListPage> {
       title: "【初めての雨】",
       date: "2026/08/04",
       dogBreed: "トイプードル",
-      content: "ポツポツと音が鳴り始め、外の景色が一変した日。抱っこされて玄関から外を覗き込んだシエロは、空から降ってくる大量の「水滴」に大混乱。「空からお水が降ってくるなんて聞いてない…！」と言わんばかりに目を丸くし、自分の鼻先に一滴ぽたんと落ちた瞬間、ヒヤッとした冷たさに「ひゃん！」と小さく跳ね上がりました。水たまりを見つめては「踏んだら底なしnumaに沈むのでは…？」と警戒し、一歩も足をつけようとしません。結局、雨の音をバックに飼い主の腕の中でカチコチに固まったまま、初めての雨見学は終了しました。",
+      content: "ポツポツと音が鳴り始め、外の景色が一変した日。抱っこされて玄関から外を覗き込んだシエロは、空から降ってくる大量の「水滴」に大混乱。「空からお水が降ってくるなんて聞いてない…！」と言わんばかりに目を丸くし、自分の鼻気に一滴ぽたんと落ちた瞬間、ヒヤッとした冷たさに「ひゃん！」と小さく跳ね上がりました。水たまりを見つめては「踏んだら底なしnumaに沈むのでは…？」と警戒し、一歩も足をつけようとしません。結局、雨の音をバックに飼い主の腕の中でカチコチに固まったまま、初めての雨見学は終了しました。",
     ),
   ];
 
@@ -153,9 +153,9 @@ class _StoryListPageState extends State<StoryListPage> {
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
     final String? version = prefs.getString('data_version');
-    if (version != '2026_banner_v1') {
+    if (version != '2026_fix_v2') {
       await prefs.clear();
-      await prefs.setString('data_version', '2026_banner_v1');
+      await prefs.setString('data_version', '2026_fix_v2');
     }
 
     final String? storiesJson = prefs.getString('saved_stories');
@@ -183,6 +183,50 @@ class _StoryListPageState extends State<StoryListPage> {
       story.likes++;
     });
     _saveStories();
+  }
+
+  void _toggleAdminMode(bool value) {
+    if (value) {
+      final passController = TextEditingController();
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('管理者パスワード入力'),
+          content: TextField(
+            controller: passController,
+            obscureText: true,
+            decoration: const InputDecoration(
+              hintText: 'パスワードを入力',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (passController.text == '1234') { // パスワードは「1234」
+                  setState(() {
+                    isAdminMode = true;
+                  });
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('パスワードが違います')),
+                  );
+                }
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        ),
+      );
+    } else {
+      setState(() {
+        isAdminMode = false;
+      });
+    }
   }
 
   void _addOrEditStory({Story? story}) {
@@ -306,11 +350,7 @@ class _StoryListPageState extends State<StoryListPage> {
               ),
               Switch(
                 value: isAdminMode,
-                onChanged: (value) {
-                  setState(() {
-                    isAdminMode = value;
-                  });
-                },
+                onChanged: _toggleAdminMode,
               ),
             ],
           ),
@@ -336,7 +376,6 @@ class _StoryListPageState extends State<StoryListPage> {
               },
             ),
           ),
-          // シエロの挨拶バナーカード
           Container(
             width: double.infinity,
             margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
@@ -346,17 +385,17 @@ class _StoryListPageState extends State<StoryListPage> {
               borderRadius: BorderRadius.circular(15),
               border: Border.all(color: Colors.lightBlueAccent.shade100, width: 1.5),
             ),
-            child: const Column(
+            child: Column(
               children: [
-                Text(
+                const Text(
                   '🐶 こんにちは！トイプードルのシエロです！',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.lightBlue),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   'ボクの日常のちょっと笑える事件をあつめたよ。\n読んだあと「クスッ」としたら、ぜひ右側の ❤️（いいね）を押してね！',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
+                  style: TextStyle(fontSize: 13, color: Colors.black.withOpacity(0.7), height: 1.4),
                 ),
               ],
             ),
