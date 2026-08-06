@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,9 +17,6 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -33,6 +31,7 @@ jobs:
         run: |
           flutter pub get
           flutter build web --release --base-href "/my_first_app/"
+          touch build/web/.nojekyll
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
