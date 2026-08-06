@@ -152,10 +152,11 @@ class _StoryListPageState extends State<StoryListPage> {
 
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
+    // キャッシュ強制リセット用バージョン
     final String? version = prefs.getString('data_version');
-    if (version != '2026_fix_v2') {
+    if (version != '2026_pass_v1') {
       await prefs.clear();
-      await prefs.setString('data_version', '2026_fix_v2');
+      await prefs.setString('data_version', '2026_pass_v1');
     }
 
     final String? storiesJson = prefs.getString('saved_stories');
@@ -206,7 +207,7 @@ class _StoryListPageState extends State<StoryListPage> {
             ),
             ElevatedButton(
               onPressed: () {
-                if (passController.text == '1234') { // パスワードは「1234」
+                if (passController.text == '1234') {
                   setState(() {
                     isAdminMode = true;
                   });
