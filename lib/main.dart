@@ -152,11 +152,10 @@ class _StoryListPageState extends State<StoryListPage> {
 
   Future<void> _loadStories() async {
     final prefs = await SharedPreferences.getInstance();
-    // キャッシュ強制リセット用バージョン
     final String? version = prefs.getString('data_version');
-    if (version != '2026_pass_v1') {
+    if (version != '2026_pass_v99') {
       await prefs.clear();
-      await prefs.setString('data_version', '2026_pass_v1');
+      await prefs.setString('data_version', '2026_pass_v99');
     }
 
     final String? storiesJson = prefs.getString('saved_stories');
@@ -191,18 +190,26 @@ class _StoryListPageState extends State<StoryListPage> {
       final passController = TextEditingController();
       showDialog(
         context: context,
+        barrierDismissible: false,
         builder: (context) => AlertDialog(
-          title: const Text('管理者パスワード入力'),
+          title: const Text('🔒 管理者パスワード入力'),
           content: TextField(
             controller: passController,
             obscureText: true,
+            autofocus: true,
             decoration: const InputDecoration(
-              hintText: 'パスワードを入力',
+              hintText: 'パスワードを入力 (初期: 1234)',
+              border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                setState(() {
+                  isAdminMode = false;
+                });
+                Navigator.pop(context);
+              },
               child: const Text('キャンセル'),
             ),
             ElevatedButton(
@@ -212,6 +219,9 @@ class _StoryListPageState extends State<StoryListPage> {
                     isAdminMode = true;
                   });
                   Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('管理者モードに切り替えました')),
+                  );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('パスワードが違います')),
